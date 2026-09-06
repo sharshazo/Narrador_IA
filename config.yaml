@@ -1,0 +1,444 @@
+# Narrador_IA - configuracion
+# Rutas relativas (voices/...) son relativas a esta carpeta (Narrador_IA/).
+
+# Ruta completa al archivo .plugindata si el autodetectado falla.
+# Ejemplo: "C:\\Users\\shars\\OneDrive\\Documentos\\The Lord of the Rings Online\\PluginData\\sharshazo\\AllServers\\LOTRO_Narrator_Feed.plugindata"
+plugindata_path: null
+
+poll_interval_seconds: 0.04  # cada cuanto se revisa si hay chat/pedido/SFX nuevo (bajado de 0.3->0.15 el 2026-09-02, y de 0.15->0.04 el 2026-09-03: pedido explicito de que los SFX de abrir ventana/cambiar pestaña se sientan instantaneos -- el costo real de revisar 4 archivos chicos 25 veces por segundo en vez de 6-7 es insignificante para la CPU)
+max_chars: 400                # mensajes mas largos que esto se ignoran (evita leer bloques enteros)
+dedupe_window_seconds: 6      # ignora una linea identica repetida dentro de esta ventana
+max_queue_depth: 8            # si se acumulan mas lineas sin leer que esto, se descartan las mas viejas
+
+# Carpeta accesoria de audio (relativa a esta carpeta), usada solo si
+# cache_enabled: true.
+cache_dir: "VoiceOverData/cache"
+
+# 2026-09-02 (pedido explicito del usuario): "sin cache, nada se guarda" --
+# el cache real llego a pesar 15GB con solo 4765 de 14824 misiones
+# generadas, SIN ningun tope que lo frenara.
+#
+# 2026-09-03 (pedido explicito del usuario: "que sea instantaneo si es
+# posible" -- medido en esta sesion: una sintesis NUEVA de edge-tts tiene un
+# piso de red de ~0.7-1.3s antes del primer byte de audio, sea cual sea el
+# largo del texto -- no bajable desde el codigo sin evitar la llamada de red
+# por completo para esa linea puntual). Reactivado, esta vez CON TOPE
+# (cache_max_mb): al pasarse del limite se borra lo usado hace MAS TIEMPO
+# primero (LRU real, ver VoiceCache.enforce_limit()) -- nunca vuelve a
+# crecer sin control como la vez pasada. Una linea narrada una vez sale
+# INSTANTANEA la proxima vez que se repite (misma mision con otro
+# personaje, misiones diarias, volver a una zona), a costa de hasta
+# cache_max_mb de disco.
+#
+# 2026-09-05 (pedido explicito del usuario: "por lo general siempre
+# tenemos activa comunmente 5 misiones... podriamos hacer este guardado
+# mas pequeño"): 300MB nunca se eligio contra un uso real medido -- el
+# cache real de esta cuenta, tras varios dias de juego (106 archivos),
+# pesa 2.6MB, el archivo mas pesado 49KB. A ese tamaño real, 300MB
+# alcanzaria para mas de 10.000 lineas narradas antes de que
+# enforce_limit() borre la primera -- muchisimo mas margen del que hace
+# falta para "5 misiones activas" mas el chat de una sesion de juego.
+# Bajado a un numero que sigue cubriendo con margen de sobra varias
+# sesiones completas (30MB / ~30KB promedio real ~= 1000 lineas) sin
+# reservar espacio de mas. El mecanismo de auto-borrado (LRU, mas viejo
+# primero) YA corria automaticamente antes de este cambio -- esto solo
+# ajusta el numero, no el comportamiento.
+cache_enabled: true
+cache_max_mb: 30
+
+# Efectos de sonido cortos (fanfarria al aceptar/completar mision, ding de
+# progreso, pergamino al abrir/cerrar, click de fila -- ver
+# NarratorBridge.lua:SignalSfx, src/sfx.py). Independiente de la narracion:
+# son archivos de audio ya generados en voices/sfx/ (ver tools/gen_sfx.py),
+# no texto sintetizado. sfx_enabled: false los apaga a todos sin tocar nada
+# mas.
+sfx_enabled: true
+sfx_dir: "voices/sfx"
+
+# Narracion de introduccion (pedido explicito del usuario, 2026-09-05): un
+# audio FIJO, pre-generado una sola vez con la voz "narrador_intro" (ver
+# tools/build_intro_narration.py, voices/intro/intro_bienvenida.wav) que se
+# reproduce automaticamente UNA VEZ por cada apertura de LOTRO -- se logra
+# gratis porque watcher.py ya lanza un proceso narrator.py nuevo por cada
+# apertura del juego y lo mata al cerrarlo (ver Narrator.play_intro en
+# src/narrator.py). intro_enabled: false apaga el disparo automatico sin
+# tocar nada mas; el boton "Reproducir introduccion" de la bandeja siempre
+# funciona, sea cual sea este valor (pensado para poder probarla a mano).
+intro_enabled: true
+intro_delay_seconds: 7  # espera tras detectar LOTRO antes de narrar, para dejar cargar el juego
+
+# Narracion ambiental aleatoria MIENTRAS SE JUEGA (2026-09-05, pedido
+# explicito del usuario): historias/leyendas/consejos que el narrador dice
+# solo, cada tanto -- SIN musica (para no competir con el audio del juego
+# en partidas largas), solo con los graves realzados (ver
+# audio_fx.apply_narrator_fx). Prioridad MAS BAJA de las 3 colas del
+# narrador (ver tts.py:play_ambient): un click en "Narrar" para una mision
+# la corta al instante, y el temporizador de la proxima sigue su curso
+# aparte, sin verse afectado. ambient_enabled: false la apaga sin tocar
+# nada mas. min/max: rango en segundos entre un episodio y el siguiente
+# (se elige un valor al azar dentro de ese rango cada vez).
+ambient_enabled: true
+ambient_min_interval_seconds: 480   # 8 minutos
+ambient_max_interval_seconds: 900   # 15 minutos
+
+# Que canales narrar y con que voz. Los nombres de voz deben existir en "voices:" mas abajo.
+# 2026-09-02 (pedido explicito del usuario): TODOS desactivados -- solo se
+# quiere narracion de misiones (aceptar/progreso/completar, ver
+# Core/NarratorBridge.lua), no el chat ambiental que reenvia
+# LOTRO_Chat_Narrator. El addon LOTRO_Chat_Narrator puede seguir instalado
+# sin problema -- sigue reenviando el feed, pero Narrador_IA no narra nada
+# de el con todos los canales en false. Reactivar cualquiera de estos
+# devuelve el chat ambiental sin tocar nada mas.
+channels:
+  Quest:
+    enabled: false
+    voice: edge_alvaro
+  Say:
+    enabled: false
+    voice: edge_elvira
+  Emote:
+    enabled: false
+    voice: edge_elvira
+  Tell:
+    enabled: false
+    voice: edge_elvira
+  Fellowship:
+    enabled: false
+    voice: edge_elvira
+  Kinship:
+    enabled: false
+    voice: edge_elvira
+  Raid:
+    enabled: false
+    voice: edge_elvira
+  Death:
+    enabled: false
+    voice: edge_alvaro
+  Loot:
+    enabled: false
+    voice: edge_alvaro
+  Advancement:
+    enabled: false
+    voice: edge_alvaro
+
+# Voces disponibles (ver src/engines/). Piper (offline) se elimino a
+# proposito (2026-09-02, pedido explicito del usuario): LOTRO es un MMO
+# online, si no hay internet el juego mismo se desconecta, asi que un motor
+# de respaldo "sin internet" no tenia caso de uso real. Si un motor falla
+# por otro motivo, se cae a una voz edge-tts fija (ver FALLBACK_VOICE_NAME
+# en src/tts.py) en vez de quedar en silencio.
+#
+# - engine: edge   -> gratis, sin API key, requiere internet (servicio de
+#   lectura en voz alta de Microsoft Edge). "rate"/"volume_pct"/"pitch" son
+#   strings tipo "+10%"/"-20%"/"+5Hz".
+# - engine: xtts   -> clonacion de voz LOCAL y gratuita (sin API key), a
+#   partir de un clip de referencia en "clone_ref" (ver voices/reference/).
+#   Requiere instalar el paquete opcional `coqui-tts` (ver README, ~2GB de
+#   modelo la primera vez). Pensada para personajes principales.
+voices:
+  edge_alvaro:
+    engine: edge
+    voice_id: es-ES-AlvaroNeural
+  edge_elvira:
+    engine: edge
+    voice_id: es-ES-ElviraNeural
+  edge_jorge:
+    engine: edge
+    voice_id: es-MX-JorgeNeural
+  edge_dalia:
+    engine: edge
+    voice_id: es-MX-DaliaNeural
+  edge_tomas:
+    engine: edge
+    voice_id: es-AR-TomasNeural
+  edge_elena:
+    engine: edge
+    voice_id: es-AR-ElenaNeural
+  # 2026-09-02 (pedido explicito del usuario, tras comparar Piper vs edge-tts
+  # de oido: "aun se escucha robot" / edge sono mejor): las 39 voces edge-tts
+  # en espanol restantes (de 45 en total -- lista real via `edge-tts
+  # --list-voices`, no adivinada), cubriendo 22 paises. Piper pasa a ser
+  # solo el respaldo si un motor falla (ver npc_voice_pool mas abajo).
+  edge_bo_marcelo:
+    engine: edge
+    voice_id: es-BO-MarceloNeural
+  edge_bo_sofia:
+    engine: edge
+    voice_id: es-BO-SofiaNeural
+  edge_cl_catalina:
+    engine: edge
+    voice_id: es-CL-CatalinaNeural
+  edge_cl_lorenzo:
+    engine: edge
+    voice_id: es-CL-LorenzoNeural
+  edge_co_gonzalo:
+    engine: edge
+    voice_id: es-CO-GonzaloNeural
+  edge_co_salome:
+    engine: edge
+    voice_id: es-CO-SalomeNeural
+  edge_cr_juan:
+    engine: edge
+    voice_id: es-CR-JuanNeural
+  edge_cr_maria:
+    engine: edge
+    voice_id: es-CR-MariaNeural
+  edge_cu_belkys:
+    engine: edge
+    voice_id: es-CU-BelkysNeural
+  edge_cu_manuel:
+    engine: edge
+    voice_id: es-CU-ManuelNeural
+  edge_do_emilio:
+    engine: edge
+    voice_id: es-DO-EmilioNeural
+  edge_do_ramona:
+    engine: edge
+    voice_id: es-DO-RamonaNeural
+  edge_ec_andrea:
+    engine: edge
+    voice_id: es-EC-AndreaNeural
+  edge_ec_luis:
+    engine: edge
+    voice_id: es-EC-LuisNeural
+  edge_es_ximena:
+    engine: edge
+    voice_id: es-ES-XimenaNeural
+  edge_gq_javier:
+    engine: edge
+    voice_id: es-GQ-JavierNeural
+  edge_gq_teresa:
+    engine: edge
+    voice_id: es-GQ-TeresaNeural
+  edge_gt_andres:
+    engine: edge
+    voice_id: es-GT-AndresNeural
+  edge_gt_marta:
+    engine: edge
+    voice_id: es-GT-MartaNeural
+  edge_hn_carlos:
+    engine: edge
+    voice_id: es-HN-CarlosNeural
+  edge_hn_karla:
+    engine: edge
+    voice_id: es-HN-KarlaNeural
+  edge_ni_federico:
+    engine: edge
+    voice_id: es-NI-FedericoNeural
+  edge_ni_yolanda:
+    engine: edge
+    voice_id: es-NI-YolandaNeural
+  edge_pa_margarita:
+    engine: edge
+    voice_id: es-PA-MargaritaNeural
+  edge_pa_roberto:
+    engine: edge
+    voice_id: es-PA-RobertoNeural
+  edge_pe_alex:
+    engine: edge
+    voice_id: es-PE-AlexNeural
+  edge_pe_camila:
+    engine: edge
+    voice_id: es-PE-CamilaNeural
+  edge_pr_karina:
+    engine: edge
+    voice_id: es-PR-KarinaNeural
+  edge_pr_victor:
+    engine: edge
+    voice_id: es-PR-VictorNeural
+  edge_py_mario:
+    engine: edge
+    voice_id: es-PY-MarioNeural
+  edge_py_tania:
+    engine: edge
+    voice_id: es-PY-TaniaNeural
+  edge_sv_lorena:
+    engine: edge
+    voice_id: es-SV-LorenaNeural
+  edge_sv_rodrigo:
+    engine: edge
+    voice_id: es-SV-RodrigoNeural
+  edge_us_alonso:
+    engine: edge
+    voice_id: es-US-AlonsoNeural
+  edge_us_paloma:
+    engine: edge
+    voice_id: es-US-PalomaNeural
+  edge_uy_mateo:
+    engine: edge
+    voice_id: es-UY-MateoNeural
+  edge_uy_valentina:
+    engine: edge
+    voice_id: es-UY-ValentinaNeural
+  edge_ve_paola:
+    engine: edge
+    voice_id: es-VE-PaolaNeural
+  edge_ve_sebastian:
+    engine: edge
+    voice_id: es-VE-SebastianNeural
+  # Voz clonada real (2026-09-02): actor de doblaje contratado para este
+  # proyecto (confirmado con el usuario), NO un actor de las peliculas.
+  # Sigue usandose para el NPC "gandalf" en el chat ambiental (ver
+  # main_npcs mas abajo) -- NO tocar, es el sistema de misiones existente.
+  gandalf_clone:
+    engine: xtts
+    clone_ref: voices/reference/gandalf.mp3
+
+  # Voz de la narracion de INTRODUCCION (2026-09-05). Historial de prueba y
+  # error explicito del usuario, de peor a mejor resultado:
+  #   1) gandalf_clone (XTTS): "esta demasiado malo, tiene mucho ruido" --
+  #      clonar desde un clip corto (~10s) arrastra ruido de fondo del clip
+  #      en cada fragmento nuevo, notorio en una pieza de 2-3 minutos.
+  #   2) edge-tts/es-ES-AlvaroNeural con pitch/rate bajados: limpio, pero
+  #      "necesito el mejor generador... uno mas viejo con todo de viejo".
+  #   3) ElevenLabs, voces "premade" gratis (Bill/Callum/George/Daniel/
+  #      Arnold/Antoni, las unicas 6 usables por API sin plan pago):
+  #      ninguna sono lo bastante "anciana" para el usuario.
+  #   4) ElevenLabs, Biblioteca (necesita plan pago para usar por API, el
+  #      usuario lo actualizo): "Storyteller Oxley - Grandpa" fue la
+  #      elegida final tras comparar 5 candidatas (Eldrin, Daniel-mago,
+  #      Oslo, Oxley, Fabo) -- ver src/engines/elevenlabs_engine.py.
+  # public_owner_id: hace falta para agregar la voz a la cuenta la primera
+  # vez (voces de Biblioteca, a diferencia de las "premade", no estan
+  # disponibles para sintesis hasta que se agregan una vez).
+  narrador_intro:
+    engine: elevenlabs
+    voice_id: 0dPqNXnhg2bmxQv1WKDp
+    public_owner_id: ae23ca715ed6b339e4ad22f2d45dd40b36a6449e031b4f8970bfe29524bd1bbc
+    model_id: eleven_multilingual_v2
+    voice_settings:
+      stability: 0.35
+      similarity_boost: 0.8
+      style: 0.6
+      use_speaker_boost: true
+
+  # Segunda cuenta de ElevenLabs (2026-09-05, pedido explicito del usuario:
+  # "necesito una voz de mago viejo, que tenga casi las mismas
+  # caracteristicas a la que usamos"). Esa cuenta es gratis -- confirmado
+  # que las voces de mago de la Biblioteca (Eldrin, Daniel-el-mago-gruñon)
+  # siguen bloqueadas ahi igual que en cualquier cuenta free. "Bill" es la
+  # mas vieja/calida de las 6 voces "premade" gratis (ver la comparacion
+  # hecha en esta sesion), la mas cercana a narrador_intro sin pagar en
+  # esta segunda cuenta. api_key_env: usa ELEVENLABS_API_KEY_BILL (.env),
+  # NO la key de narrador_intro -- son cuentas distintas.
+  narrador_bill:
+    engine: elevenlabs
+    api_key_env: ELEVENLABS_API_KEY_BILL
+    voice_id: pqHfZKP75CvOlQylNhV4
+    model_id: eleven_multilingual_v2
+    voice_settings:
+      stability: 0.4
+      similarity_boost: 0.8
+      style: 0.55
+      use_speaker_boost: true
+
+# Voces usadas por el boton "Narrar" (QuestSync) para asignar una voz FIJA a
+# cada NPC GENERICO (bestower de la mision): hash estable del nombre ->
+# siempre la misma entrada de esta lista para ese NPC, distintos NPCs
+# reparten distinta voz. Ver src/npc_voice.py. No es adivinar el genero real
+# del NPC (QuestSync no tiene ese dato) -- es variedad + consistencia.
+#
+# 2026-09-02 (pedido explicito del usuario, tras comparar de oido Piper vs
+# edge-tts): el pool pasa a ser las 45 voces edge-tts -- Piper (narrador/
+# social/sharvard_b/claude/ald) queda AFUERA del pool, solo sigue existiendo
+# como voz de respaldo automatico si edge/xtts fallan (ver tts.py,
+# FALLBACK_VOICE_NAME = "narrador"), nunca se elige a proposito.
+npc_voice_pool:
+  - edge_alvaro
+  - edge_elvira
+  - edge_jorge
+  - edge_dalia
+  - edge_tomas
+  - edge_elena
+  - edge_bo_marcelo
+  - edge_bo_sofia
+  - edge_cl_catalina
+  - edge_cl_lorenzo
+  - edge_co_gonzalo
+  - edge_co_salome
+  - edge_cr_juan
+  - edge_cr_maria
+  - edge_cu_belkys
+  - edge_cu_manuel
+  - edge_do_emilio
+  - edge_do_ramona
+  - edge_ec_andrea
+  - edge_ec_luis
+  - edge_es_ximena
+  - edge_gq_javier
+  - edge_gq_teresa
+  - edge_gt_andres
+  - edge_gt_marta
+  - edge_hn_carlos
+  - edge_hn_karla
+  - edge_ni_federico
+  - edge_ni_yolanda
+  - edge_pa_margarita
+  - edge_pa_roberto
+  - edge_pe_alex
+  - edge_pe_camila
+  - edge_pr_karina
+  - edge_pr_victor
+  - edge_py_mario
+  - edge_py_tania
+  - edge_sv_lorena
+  - edge_sv_rodrigo
+  - edge_us_alonso
+  - edge_us_paloma
+  - edge_uy_mateo
+  - edge_uy_valentina
+  - edge_ve_paola
+  - edge_ve_sebastian
+
+# Override para PERSONAJES PRINCIPALES: nombre de NPC en minusculas -> nombre
+# de una voz declarada arriba en "voices". Se revisa antes que el hash de
+# npc_voice_pool.
+#
+# 2026-09-02: curado con los nombres EXACTOS de bestower que aparecen en
+# Data/QuestDatabase_*.lua (verificado con grep, no adivinado) para los
+# personajes legendarios de LOTRO. IMPORTANTE -- esto NO es clonacion de voz
+# real, es una asignacion FIJA (no aleatoria por hash) elegida a mano por
+# arquetipo entre las 11 voces gratis ya disponibles: mas consistente que el
+# hash generico, pero no "identica" a la voz real del personaje. Para eso
+# hace falta un clip de referencia por personaje y una voz "engine: xtts"
+# (ver voices/reference/README.md) -- con solo 11 voces stock, varios
+# personajes comparten voz a proposito por parecido de arquetipo (ambos
+# magos ancianos, ambos enanos, etc.), documentado abajo.
+main_npcs:
+  # 2026-09-02 (pedido explicito del usuario, tras ampliar el pool a 45
+  # voces edge-tts): antes solo habia 11 voces en total y varios personajes
+  # compartian por falta de opciones -- ahora CADA personaje legendario
+  # tiene su propia voz, sin repetir ninguna entre si. Elegidas por
+  # arquetipo (genero + tono narrativo esperado), NO por haber escuchado la
+  # voz real de cada personaje -- ver audición mandada al usuario para que
+  # confirme/ajuste cada una de oido.
+  gandalf: gandalf_clone
+  radagast: edge_gt_andres
+  radagast the brown: edge_gt_andres
+  tom bombadil: edge_co_gonzalo
+  aragorn: edge_alvaro
+  king aragorn ii elessar: edge_alvaro
+  strider: edge_alvaro
+  merry: edge_pa_roberto
+  legolas: edge_ec_luis
+  elladan: edge_hn_carlos
+  elrohir: edge_pe_alex
+  glorfindel: edge_cr_juan
+  thranduil: edge_ve_sebastian
+  king thranduil: edge_ve_sebastian
+  pippin: edge_do_emilio
+  elrond: edge_gq_javier
+  galadriel: edge_es_ximena
+  arwen: edge_cl_catalina
+  gimli: edge_cu_manuel
+  thorin oakenshield: edge_uy_mateo
+  king thorin iii: edge_cl_lorenzo
+  frodo baggins: edge_sv_rodrigo
+  boromir: edge_jorge
+  samwise gamgee: edge_py_mario
+  "samwise gamgee - loyal attendant": edge_py_mario
+  bilbo baggins: edge_tomas
+
+# Regex: cualquier mensaje que matchee se descarta sin narrar.
+ignore_patterns:
+  - "^/"

@@ -1,0 +1,20 @@
+# Entorno virtual -- lo crea Instalar.bat en cada PC, no se sube nunca.
+.venv/
+__pycache__/
+*.pyc
+
+# Secretos -- NUNCA subir. Ver .env.example para la plantilla.
+.env
+
+# Cache de audio y logs locales de cada instalacion -- no aportan nada
+# a otros usuarios y pueden crecer mucho.
+VoiceOverData/cache/
+*.log
+
+# Voz de actor contratado -- sin derecho de redistribucion publica.
+voices/reference/gandalf.mp3
+
+*.bak
+*.bak_*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,22 @@
+edge-tts
+luadata
+pyyaml
+pystray
+pillow
+# requests: usado por src/engines/elevenlabs_engine.py -- ese modulo se
+# importa SIEMPRE (tts.py importa los 3 motores sin condicion), aunque
+# ninguna voz de tu config.yaml use "engine: elevenlabs". Sin esto, una
+# instalacion NUEVA (sin torch/transformers instalados de antes, que en la
+# maquina original arrastraban requests como dependencia transitiva sin que
+# nadie lo pidiera a proposito) fallaria al arrancar con
+# "ModuleNotFoundError: No module named 'requests'". Encontrado 2026-09-05
+# preparando el paquete para distribuir.
+requests
+
+# Piper (offline) se elimino a proposito (2026-09-02): LOTRO es un MMO
+# online, sin internet el juego mismo se desconecta, asi que un motor de
+# respaldo "sin internet" no tenia caso de uso real.
+
+# Opcional (motor xtts, clonacion de voz para NPCs principales -- ~2GB de
+# modelo la primera vez, ver README "Voces de NPCs principales (clonacion)"):
+#   pip install coqui-tts torch torchaudio torchcodec
