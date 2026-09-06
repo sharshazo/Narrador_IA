@@ -6,8 +6,7 @@ mientras jugás, con voces neuronales gratis en español (edge-tts,
 45 voces de 22 países).
 
 Es la pieza que hace sonar los botones de narrar/silenciar de
-[**QuestSync**](https://github.com/sharshazo/LOTRO_Quest_Assistant) y
-lee el chat que reenvía [**LOTRO_Chat_Narrator**](https://github.com/sharshazo/LOTRO_Chat_Narrator) —
+[**QuestSync**](https://github.com/sharshazo/LOTRO_Quest_Assistant) —
 corre aparte del juego porque LOTRO no permite que un addon reproduzca
 audio por sí mismo.
 
@@ -26,9 +25,8 @@ Eso es todo. El instalador:
 - te pregunta si querés que arranque automáticamente cada vez que
   abrís LOTRO (recomendado).
 
-Con LOTRO abierto (y los addons [QuestSync](https://github.com/sharshazo/LOTRO_Quest_Assistant)
-y [LOTRO_Chat_Narrator](https://github.com/sharshazo/LOTRO_Chat_Narrator)
-instalados), ya está: aparece un ícono en la bandeja del sistema y
+Con LOTRO abierto (y [QuestSync](https://github.com/sharshazo/LOTRO_Quest_Assistant)
+instalado), ya está: aparece un ícono en la bandeja del sistema y
 los botones "Narrar"/altavoz del juego empiezan a sonar de verdad.
 
 ## Qué hace
