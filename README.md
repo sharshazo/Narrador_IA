@@ -1,16 +1,16 @@
 # Narrador_IA
 
 App de Windows que le pone voz a **The Lord of the Rings Online**:
-narra misiones bajo demanda y cuenta pequeñas historias al azar
-mientras jugás, con voces neuronales gratis en español (edge-tts,
+narra las misiones y cuenta pequeñas historias del mundo de lotro al azar
+mientras jugás, con voces en español (edge-tts,
 45 voces de 22 países).
 
-Es la pieza que hace sonar los botones de narrar/silenciar de
+Requiere del complemento del addons LOTRO_Quest_Assistant que es el que tiene los botones de   narrar/silenciar. Link abajo
 [**QuestSync**](https://github.com/sharshazo/LOTRO_Quest_Assistant) —
-corre aparte del juego porque LOTRO no permite que un addon reproduzca
+Este complemento corre aparte del juego porque LOTRO no permite que un addon reproduzca
 audio por sí mismo.
 
-## Instalación (sin saber programar)
+## Instalación (de un solo clik)
 
 1. Descargá esta carpeta completa.
 2. Doble click en **`Instalar.bat`**.
@@ -20,7 +20,7 @@ Eso es todo. El instalador:
 - busca Python en tu PC, y si no lo tenés, **lo descarga e instala
   solo** desde la página oficial (python.org) — no hay que buscar
   nada ni tildar ninguna casilla;
-- crea su propio entorno, sin tocar nada más de tu sistema;
+- crea su propio entorno, sin tocar nada más;
 - instala las librerías necesarias;
 - te pregunta si querés que arranque automáticamente cada vez que
   abrís LOTRO (recomendado).
@@ -32,14 +32,14 @@ los botones "Narrar"/altavoz del juego empiezan a sonar de verdad.
 ## Qué hace
 
 - **Botón "Narrar"** en cualquier misión (Tracker, ventana principal o
-  libro de misión): la lee en voz alta al toque, con una voz fija
+  libro de misión): la lee en voz alta, con una voz fija
   según qué personaje la da.
 - **Historias al azar**: cada 8-15 minutos, mientras jugás, el
   narrador cuenta solo una pequeña historia o consejo — sin que hagas
   nada.
 - **Botón de altavoz** en el Tracker: apaga o prende toda la
   narración con un click.
-- Todo con voces neuronales gratuitas, sin cuenta ni tarjeta.
+- Todo con voces.
 
 ## Personalización
 
