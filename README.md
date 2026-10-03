@@ -6,7 +6,7 @@ mientras jugás, con voces en español (edge-tts,
 45 voces de 22 países).
 
 Requiere del complemento del addons LOTRO_Quest_Assistant que es el que tiene los botones de   narrar/silenciar. Link abajo
-[**QuestSync**](https://github.com/sharshazo/LOTRO_Quest_Assistant) —
+[**QuestSync**](https://github.com/sharshazo/Plugins) —
 Este complemento corre aparte del juego porque LOTRO no permite que un addon reproduzca
 audio por sí mismo.
 
@@ -25,7 +25,7 @@ Eso es todo. El instalador:
 - te pregunta si querés que arranque automáticamente cada vez que
   abrís LOTRO (recomendado).
 
-Con LOTRO abierto (y [QuestSync](https://github.com/sharshazo/LOTRO_Quest_Assistant)
+Con LOTRO abierto (y [QuestSync](https://github.com/sharshazo/Plugins)
 instalado), ya está: aparece un ícono en la bandeja del sistema y
 los botones "Narrar"/altavoz del juego empiezan a sonar de verdad.
 
